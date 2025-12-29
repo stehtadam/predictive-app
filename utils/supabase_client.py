@@ -108,6 +108,8 @@ async def insert_upload_record(
     target_column: Optional[str],
     row_count: int,
     result_preview: List[Dict[str, Any]],
+    prediction_blob_url: Optional[str] = None,
+
 ):
     data: Dict[str, Any] = {
         "filename": filename,
@@ -116,6 +118,8 @@ async def insert_upload_record(
         "target_column": target_column,
         "row_count": row_count,
         "result_preview": result_preview,
+        "prediction_blob_url": prediction_blob_url
+
     }
 
     return await supabase.insert("uploads", data)

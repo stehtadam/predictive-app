@@ -3,7 +3,7 @@ import asyncio
 import pandas as pd
 import streamlit as st
 
-from utils.azure_blob import upload_file_to_blob
+from utils.azure_blob import upload_file_to_blob, upload_prediction_to_blob
 from utils.supabase_client import get_supabase_client, insert_upload_record
 from utils.predictors import run_predictive_pipeline
 
@@ -86,6 +86,19 @@ if uploaded_file is not None:
         st.subheader("Model info")
         st.json(model_info)
 
+    # NEW: Upload full prediction output to Azure Blob
+
+
+        with st.spinner("Uploading full prediction output to Azure Blob Storage..."):
+            prediction_blob_url = upload_prediction_to_blob(
+                prediction_df=prediction_result,
+                original_filename=uploaded_file.name
+            )
+
+        st.success("Full prediction output stored in Azure Blob Storage.")
+        st.write("Prediction file URL:")
+        st.code(prediction_blob_url)
+
         # Persist metadata + result summary in Supabase
         with st.spinner("Saving metadata and results to Supabase..."):
             asyncio.run(
@@ -96,7 +109,9 @@ if uploaded_file is not None:
                     task_type=model_info["task_type"],
                     target_column=model_info.get("target_column"),
                     row_count=len(df),
-                    result_preview=prediction_result.head(10).to_dict(orient="records")
+                    result_preview=prediction_result.head(10).to_dict(orient="records"),
+                    prediction_blob_url=prediction_blob_url   # NEW
+
                 )
             )
 
