@@ -1,4 +1,5 @@
 import io
+import asyncio
 import pandas as pd
 import streamlit as st
 
@@ -87,17 +88,20 @@ if uploaded_file is not None:
 
         # Persist metadata + result summary in Supabase
         with st.spinner("Saving metadata and results to Supabase..."):
-            insert_upload_record(
-                supabase=supabase,
-                filename=uploaded_file.name,
-                blob_url=blob_url,
-                task_type=model_info["task_type"],
-                target_column=model_info.get("target_column"),
-                row_count=len(df),
-                result_preview=prediction_result.head(10).to_dict(orient="records")
+            asyncio.run(
+                insert_upload_record(
+                    supabase=supabase,
+                    filename=uploaded_file.name,
+                    blob_url=blob_url,
+                    task_type=model_info["task_type"],
+                    target_column=model_info.get("target_column"),
+                    row_count=len(df),
+                    result_preview=prediction_result.head(10).to_dict(orient="records")
+                )
             )
 
         st.success("Saved to Supabase.")
+
     else:
         st.info("Prediction not run yet. Toggle 'Run prediction immediately' in the sidebar to process.")
 
